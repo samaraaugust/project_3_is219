@@ -10,6 +10,16 @@ from werkzeug.utils import secure_filename, redirect
 
 map = Blueprint('map', __name__,
                         template_folder='templates')
+
+@map.route('/locations/<int:location_id>/delete', methods=['POST'])
+@login_required
+def delete_location(location_id):
+    location = Location.query.get(location_id)
+    db.session.delete(location)
+    db.session.commit()
+    flash('Location Deleted', 'success')
+    return redirect(url_for('map.browse_locations'), 302)
+
 @map.route('/locations/<int:location_id>/edit', methods=['POST', 'GET'])
 @login_required
 def edit_locations(location_id):
@@ -22,7 +32,7 @@ def edit_locations(location_id):
         location.population = form.population.data
         db.session.add(location)
         db.session.commit()
-        flash('Location Edited Successfully')
+        flash('Location Edited Successfully', 'success')
         return redirect(url_for('map.browse_locations'))
     return render_template('location_edit.html', form=form)
 
@@ -41,8 +51,9 @@ def browse_locations(page):
     data = pagination.items
     edit_url = ('map.edit_locations', [('location_id', ':id')])
     retrieve_url = ('map.retrieve_location', [('location_id', ':id')])
+    delete_url = ('map.delete_location', [('location_id', ':id')])
     try:
-        return render_template('browse_locations.html',retrieve_url=retrieve_url, edit_url=edit_url,Location=Location, data=data,pagination=pagination)
+        return render_template('browse_locations.html',retrieve_url=retrieve_url, edit_url=edit_url,Location=Location, data=data,pagination=pagination, delete_url=delete_url)
     except TemplateNotFound:
         abort(404)
 
