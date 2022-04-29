@@ -7,7 +7,7 @@ import flask_login
 from flask import Flask
 from flask_bootstrap import Bootstrap5
 from flask_wtf.csrf import CSRFProtect
-
+from flask_cors import CORS
 from app.auth import auth
 from app.auth import auth
 from app.cli import create_database, create_log_folder
@@ -54,6 +54,10 @@ def create_app():
     app.cli.add_command(create_log_folder)
     db.init_app(app)
     # Run once at startup:
+    api_v1_cors_config = {
+        "methods": ["OPTIONS", "GET", "POST"],
+    }
+    CORS(app, resources={"/api/*": api_v1_cors_config})
 
     return app
 

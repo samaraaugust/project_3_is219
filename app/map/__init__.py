@@ -1,5 +1,5 @@
 from flask_login import login_required, current_user
-from flask import Blueprint, render_template, abort, flash, current_app, url_for
+from flask import Blueprint, render_template, abort, flash, current_app, url_for, jsonify
 from app.map.forms import csv_upload, edit_location, new_location
 from jinja2 import TemplateNotFound
 from app.db.models import Location
@@ -10,6 +10,26 @@ from werkzeug.utils import secure_filename, redirect
 
 map = Blueprint('map', __name__,
                         template_folder='templates')
+
+@map.route('/api/locations/', methods=['GET'])
+@login_required
+def api_locations():
+    data = Location.query.all()
+    try:
+        return jsonify(data=[location.serialize() for location in data])
+    except TemplateNotFound:
+        abort(404)
+
+
+@map.route('/locations/map', methods=['GET'])
+@login_required
+def map_locations():
+    google_api_key = current_app.config.get('GOOGLE_API_KEY')
+    try:
+        return render_template('map_locations.html',google_api_key=google_api_key)
+    except TemplateNotFound:
+        abort(404)
+
 
 @map.route('/locations/<int:location_id>/delete', methods=['POST'])
 @login_required
