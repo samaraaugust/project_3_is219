@@ -34,6 +34,7 @@
                         {% if current_user.is_authenticated %}
                             {{ render_nav_item('auth.dashboard','Dashboard' ) }}
                             {{ render_nav_item('map.upload','Upload Files' ) }}
+                            {{ render_nav_item('map.browse_locations','Browse Locations' ) }}
                             {% if current_user.is_admin %}
                                 {{ render_nav_item('auth.browse_users','User Management' ) }}
                             {% endif %}
