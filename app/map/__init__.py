@@ -11,16 +11,22 @@ from werkzeug.utils import secure_filename, redirect
 map = Blueprint('map', __name__,
                         template_folder='templates')
 
-@map.route('/locations', methods=['GET', 'POST'], defaults={"page": 1})
-@map.route('/locations/<int:page>', methods=['GET', 'POST'])
+@map.route('/locations/map/<int:location_id>')
+@login_required
+def retrieve_location(location_id):
+    location = Location.query.get(location_id)
+    return render_template('location_view.html', location=location)
+
+@map.route('/locations_table', methods=['GET', 'POST'], defaults={"page": 1})
 @login_required
 def browse_locations(page):
     page = page
     per_page = 20
     pagination = Location.query.paginate(page, per_page, error_out=False)
     data = pagination.items
+    retrieve_url = ('map.retrieve_location', [('location_id', ':id')])
     try:
-        return render_template('browse_locations.html', Location=Location, data=data,pagination=pagination)
+        return render_template('browse_locations.html',retrieve_url=retrieve_url, Location=Location, data=data,pagination=pagination)
     except TemplateNotFound:
         abort(404)
 
