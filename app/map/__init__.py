@@ -1,6 +1,6 @@
 from flask_login import login_required, current_user
-from flask import Blueprint, render_template, abort, current_app, url_for
-from app.map.forms import csv_upload
+from flask import Blueprint, render_template, abort, flash, current_app, url_for
+from app.map.forms import csv_upload, edit_location
 from jinja2 import TemplateNotFound
 from app.db.models import Location
 from app.db import db
@@ -10,6 +10,21 @@ from werkzeug.utils import secure_filename, redirect
 
 map = Blueprint('map', __name__,
                         template_folder='templates')
+@map.route('/locations/<int:location_id>/edit', methods=['POST', 'GET'])
+@login_required
+def edit_locations(location_id):
+    location = Location.query.get(location_id)
+    form = edit_location(obj=location)
+    if form.validate_on_submit():
+        location.title = form.title.data
+        location.longitude = form.longitude.data
+        location.latitude = form.latitude.data
+        location.population = form.population.data
+        db.session.add(location)
+        db.session.commit()
+        flash('Location Edited Successfully')
+        return redirect(url_for('map.browse_locations'))
+    return render_template('location_edit.html', form=form)
 
 @map.route('/locations/map/<int:location_id>')
 @login_required
@@ -24,9 +39,10 @@ def browse_locations(page):
     per_page = 20
     pagination = Location.query.paginate(page, per_page, error_out=False)
     data = pagination.items
+    edit_url = ('map.edit_locations', [('location_id', ':id')])
     retrieve_url = ('map.retrieve_location', [('location_id', ':id')])
     try:
-        return render_template('browse_locations.html',retrieve_url=retrieve_url, Location=Location, data=data,pagination=pagination)
+        return render_template('browse_locations.html',retrieve_url=retrieve_url, edit_url=edit_url,Location=Location, data=data,pagination=pagination)
     except TemplateNotFound:
         abort(404)
 
