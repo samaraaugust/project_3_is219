@@ -4,7 +4,7 @@ from app import config
 import flask
 from flask import request, current_app
 import os
-from app.db import create_db_file_if_does_not_exist
+from app.db import create_db_file_if_does_not_exist, create_upload_folder
 from app.logging_config.log_formatters import RequestFormatter
 
 log_con = flask.Blueprint('log_con', __name__)
@@ -34,6 +34,7 @@ def after_request_logging(response):
 @log_con.before_app_first_request
 def setup_logs():
     create_db_file_if_does_not_exist()
+    create_upload_folder()
     # set the name of the apps log folder to logs
     logdir = config.Config.LOG_DIR
     # make a directory if it doesn't exist
